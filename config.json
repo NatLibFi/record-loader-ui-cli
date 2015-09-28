@@ -1,0 +1,183 @@
+{
+    "logging": {
+	"level": "debug"
+    },
+    "processing": {
+	"target": "match",
+	"findRelatedRecords": true,
+	"transaction": {
+	    "enableRollback": true,
+	    "retryAfterRollback": 3
+	}
+    },
+    "moduleParameters": {
+	"recordSet": "index",
+	"recordStore": {
+	    "sru": {
+		"url": ""
+	    },
+	    "melinda": {
+		"url": "",
+		"username": "",
+		"password": ""
+	    }
+	},
+	"processors": {
+	    "filter": [
+		""
+	    ],
+	    "preprocess": [
+		{
+		    "description": "Add SID",
+		    "action": "add",
+		    "path": "$.fields",
+		    "content": {
+			"tag": "SID",
+			"subfields": [
+			    {
+				"code": "b",
+				"value": "jykdo"
+			    },
+			    {
+				"code": "c",
+				"value": ""
+			    }
+			]
+		    }
+		},
+		{
+		    "description": "Add LID",
+		    "action": "add",
+		    "path": "$.fields",
+		    "content": {
+			"tag": "LID",
+			"subfields": []
+		    }
+		},
+		{
+		    "description": "Copy 001 to SID$c",
+		    "action": "copy",
+		    "sourcePath": "$.fields[?(@.tag == '001')].value",
+		    "targetPath": "$.fields[?(@.tag == 'SID')].subfields[?(@.code == 'c')].value"
+		},
+		{
+		    "description": "Copy 035 to LID",
+		    "action": "copy",
+		    "sourcePath": "$.fields[?(@.tag == '035' && @.ind1 == ' ' && @.ind2 == ' ')].subfields",
+		    "targetPath": "$.fields[?(@.tag == 'LID')].subfields"
+		},
+		{
+		    "description": "Normalize LID #1",
+		    "action": "modify",
+		    "path": "$.fields[?(@.tag == 'LID')].subfields[?(@.code == 'a')].value",
+		    "pattern": "^\\(FI-MELINDA\\)",
+		    "replacement": "FCC"
+		},
+		{
+		    "description": "Normalize LID #2",
+		    "action": "modify",
+		    "path": "$.fields[?(@.tag == 'LID')].subfields[?(@.code == 'a')].value",
+		    "pattern": "^\\(FCC\\)",
+		    "replacement": "FCC"
+		},
+		{
+		    "description": "Normalize LID #3",
+		    "action": "modify",
+		    "path": "$.fields[?(@.tag == 'LID')].subfields[?(@.code == 'a')].value",
+		    "pattern": "^FI-MELINDA",
+		    "replacement": "FCC"
+		},
+		{
+		    "description": "Normalize LID$a 'FCC00'",
+		    "action": "remove",
+		    "path": "$.fields[?(@.tag == 'LID')].subfields[?(@.code == 'a' && @.value == 'FCC00')]"
+		},
+		{
+		    "description": "Normalize LID #4",
+		    "action": "modify",
+		    "path": "$.fields[?(@.tag == 'LID')].value",
+		    "pattern": "^\\(FCC\\)",
+		    "replacement": ""
+		},
+		{
+		    "description": "Add LOW",
+		    "action": "add",
+		    "path": "$.fields",
+		    "content": {
+			"tag": "LOW",
+			"subfields": [{
+			    "code": "a",
+			    "value": "JYKDO"
+			}]
+		    }
+		},
+		{
+		    "description": "Normalize 579$a",
+		    "action": "add",
+		    "path": "$.fields[?(@.tag == '579' && @.ind1 == ' ' && @.ind2 == ' ')].subfields",
+		    "content": {
+			"code": "b",
+			"value": "jykdo"
+		    }
+		}
+	    ],
+	    "match": {
+		"query": "dc.title = '' or rec.id = ''",
+		"treshold": 50,
+		"tests": [
+		    {
+			"true": 50,
+			"false": -40,
+			"path": "$.fields[?(@.tag == '035' && @.ind1 == '' && @.ind2 == '')].subfields[?(@.code == '9')]"
+		    },
+		    {			    
+			"true": 60,
+			"false": -60,
+			"path": "$.fields[?(@.tag == '001' && @.ind1 == '' && @.ind2 == '')]"			    
+		    },
+		    {			    
+			"true": 60,
+			"false": -60,
+			"path": "$.fields[?(@.tag == '035' && @.ind1 == '' && @.ind2 == '')].subfields[?(@.code == 'a')]"			    
+		    },
+		    {			    
+			"true": 50,
+			"path": "$.fields[?(@.tag == '010' && @.ind1 == '' && @.ind2 == '')].subfields[?(@.code == 'a')]"
+		    },
+		    {			    
+			"true": 50,
+			"path": "$.fields[?(@.tag == '012' && @.ind1 == '' && @.ind2 == '')].subfields[?(@.code == 'a')]"
+		    },
+		    {			    
+			"true": 50,
+			"path": "$.fields[?(@.tag == '014' && @.ind1 == '' && @.ind2 == '')].subfields[?(@.code == 'a')]"
+		    },
+		    {			    
+			"true": 50,
+			"path": "$.fields[?(@.tag == '015' && @.ind1 == '' && @.ind2 == '')].subfields[?(@.code == 'a')]"
+		    },
+		    {
+			"true": 40,
+			"false": -40,
+			"path": "$.fields[?(@.tag == '020' && @.ind1 == '' && @.ind2 == '')].subfields[?(@.code == 'z')]"
+		    },
+		    {			    
+			"true": 50,
+			"false": -50,
+			"path": "$.fields[?(@.tag == '022' && @.ind1 == '' && @.ind2 == '')].subfields[?(@.code == 'a')]"
+		    },
+		    {			    
+			"true": 50,
+			"false": -50,
+			"path": "$.fields[?(@.tag == '020' && @.ind1 == '' && @.ind2 == '')].subfields[?(@.code == 'y')]"
+		    },
+		    {
+			"true": 50,
+			"false": -50,
+			"path": "$.fields[?(@.tag == '024' && @.ind1 == '' && @ind2 == '')].subfields[?(@.code == 'a')]"
+		    }
+		]
+	    }
+	}
+    }
+}
