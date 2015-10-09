@@ -26,4 +26,4 @@
  *
  **/
 
-process.exit(require('../lib/main')());
+require('../lib/main')();
